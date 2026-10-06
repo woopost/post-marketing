@@ -3,6 +3,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import dotenv from 'dotenv';
 import { INITIAL_BUSINESSES } from './src/data/businesses.ts';
+import { getPaginatedBusinesses, getOfficialTotalCount } from './src/services/dataGenerator.ts';
 
 dotenv.config();
 
@@ -134,34 +135,28 @@ app.get('/api/ftc/businesses', async (req, res) => {
   }
 
   // API 키가 없거나 외부 API 실패 시 내장 전국 검증 데이터베이스 반환
-  let results = [...INITIAL_BUSINESSES];
+  const pageNum = Number(page) || 1;
+  const pageSize = Number(size) || 10;
 
-  if (sido && sido !== '전체') {
-    results = results.filter((b) => b.wrkrSidoNm.includes(String(sido)));
-  }
-  if (sigungu && sigungu !== '전체') {
-    results = results.filter((b) => b.wrkrSiGunGuNm.includes(String(sigungu)));
-  }
-  if (status && status !== '전체') {
-    results = results.filter((b) => b.operSttusNm === status);
-  }
-  if (keyword) {
-    const q = String(keyword).toLowerCase();
-    results = results.filter(
-      (b) =>
-        b.bzmnNm.toLowerCase().includes(q) ||
-        b.rprsvNm.toLowerCase().includes(q) ||
-        b.bizrno.includes(q) ||
-        b.tongsinBzmnDclrNo.includes(q) ||
-        b.siteAddr.toLowerCase().includes(q) ||
-        b.rnAddr.toLowerCase().includes(q)
-    );
-  }
+  const filterState = {
+    keyword: String(keyword || ''),
+    searchType: 'all' as const,
+    sido: String(sido || '전체'),
+    sigungu: String(sigungu || '전체'),
+    status: String(status || '전체'),
+    businessType: '전체',
+    category: '전체',
+    saleMethod: '전체',
+    sortField: 'dclrDate' as const,
+    sortOrder: 'desc' as const,
+  };
+
+  const { items, totalCount } = getPaginatedBusinesses(filterState, pageNum, pageSize);
 
   res.json({
     source: 'verified_db',
-    totalCount: results.length,
-    items: results,
+    totalCount,
+    items,
   });
 });
 

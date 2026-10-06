@@ -18,6 +18,11 @@ import {
 
 interface BusinessListTableProps {
   businesses: Business[];
+  totalCount?: number;
+  currentPage?: number;
+  pageSize?: number;
+  onPageChange?: (page: number) => void;
+  onPageSizeChange?: (size: number) => void;
   bookmarks: string[];
   onToggleBookmark: (id: string) => void;
   onSelectBusiness: (business: Business) => void;
@@ -25,19 +30,51 @@ interface BusinessListTableProps {
 
 export const BusinessListTable: React.FC<BusinessListTableProps> = ({
   businesses,
+  totalCount,
+  currentPage: propCurrentPage,
+  pageSize: propPageSize,
+  onPageChange,
+  onPageSizeChange,
   bookmarks,
   onToggleBookmark,
   onSelectBusiness,
 }) => {
   const [viewMode, setViewMode] = useState<'table' | 'cards'>('table');
-  const [currentPage, setCurrentPage] = useState(1);
-  const [pageSize, setPageSize] = useState(10);
+  const [internalPage, setInternalPage] = useState(1);
+  const [internalPageSize, setInternalPageSize] = useState(10);
   const [copiedId, setCopiedId] = useState<string | null>(null);
 
-  // Pagination calculations
-  const totalPages = Math.max(1, Math.ceil(businesses.length / pageSize));
+  const currentPage = propCurrentPage ?? internalPage;
+  const pageSize = propPageSize ?? internalPageSize;
+
+  const actualTotalCount = totalCount !== undefined ? totalCount : businesses.length;
+  const totalPages = Math.max(1, Math.ceil(actualTotalCount / pageSize));
+
+  // If external totalCount is provided, businesses is already the page slice.
+  // Otherwise slice internally.
+  const paginatedBusinesses =
+    totalCount !== undefined
+      ? businesses
+      : businesses.slice((currentPage - 1) * pageSize, currentPage * pageSize);
+
   const startIndex = (currentPage - 1) * pageSize;
-  const paginatedBusinesses = businesses.slice(startIndex, startIndex + pageSize);
+
+  const handlePageChange = (page: number) => {
+    if (onPageChange) {
+      onPageChange(page);
+    } else {
+      setInternalPage(page);
+    }
+  };
+
+  const handlePageSizeChange = (size: number) => {
+    if (onPageSizeChange) {
+      onPageSizeChange(size);
+    } else {
+      setInternalPageSize(size);
+      setInternalPage(1);
+    }
+  };
 
   const handleCopy = (text: string, id: string) => {
     navigator.clipboard.writeText(text);
@@ -78,10 +115,13 @@ export const BusinessListTable: React.FC<BusinessListTableProps> = ({
       <div className="px-5 py-3 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
         <div className="text-xs text-slate-500 flex items-center gap-1.5">
           <span>전체</span>
-          <span className="font-bold font-mono text-slate-800">{businesses.length}</span>
+          <span className="font-bold font-mono text-slate-800">
+            {actualTotalCount.toLocaleString()}
+          </span>
           <span>개 등록업체 중</span>
-          <span className="font-semibold text-slate-700">
-            {startIndex + 1} - {Math.min(startIndex + pageSize, businesses.length)}
+          <span className="font-semibold text-slate-700 font-mono">
+            {(startIndex + 1).toLocaleString()} -{' '}
+            {Math.min(startIndex + pageSize, actualTotalCount).toLocaleString()}
           </span>
           <span>표시</span>
         </div>
@@ -92,10 +132,7 @@ export const BusinessListTable: React.FC<BusinessListTableProps> = ({
             <span>표시 건수:</span>
             <select
               value={pageSize}
-              onChange={(e) => {
-                setPageSize(Number(e.target.value));
-                setCurrentPage(1);
-              }}
+              onChange={(e) => handlePageSizeChange(Number(e.target.value))}
               className="px-2 py-1 text-xs bg-white border border-slate-200 rounded text-slate-800 focus:outline-hidden"
             >
               <option value={10}>10개씩</option>
@@ -377,14 +414,14 @@ export const BusinessListTable: React.FC<BusinessListTableProps> = ({
 
         <div className="flex items-center gap-1">
           <button
-            onClick={() => setCurrentPage(1)}
+            onClick={() => handlePageChange(1)}
             disabled={currentPage === 1}
             className="px-2 py-1 bg-white border border-slate-200 rounded text-slate-600 hover:text-slate-900 disabled:opacity-40 disabled:cursor-not-allowed"
           >
             처음
           </button>
           <button
-            onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+            onClick={() => handlePageChange(Math.max(1, currentPage - 1))}
             disabled={currentPage === 1}
             className="p-1 bg-white border border-slate-200 rounded text-slate-600 hover:text-slate-900 disabled:opacity-40 disabled:cursor-not-allowed"
           >
@@ -401,7 +438,7 @@ export const BusinessListTable: React.FC<BusinessListTableProps> = ({
             return (
               <button
                 key={pageNum}
-                onClick={() => setCurrentPage(pageNum)}
+                onClick={() => handlePageChange(pageNum)}
                 className={`w-7 h-7 rounded text-xs font-medium transition-colors ${
                   currentPage === pageNum
                     ? 'bg-blue-600 text-white shadow-xs'
@@ -414,14 +451,14 @@ export const BusinessListTable: React.FC<BusinessListTableProps> = ({
           })}
 
           <button
-            onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+            onClick={() => handlePageChange(Math.min(totalPages, currentPage + 1))}
             disabled={currentPage === totalPages}
             className="p-1 bg-white border border-slate-200 rounded text-slate-600 hover:text-slate-900 disabled:opacity-40 disabled:cursor-not-allowed"
           >
             <ChevronRight className="w-4 h-4" />
           </button>
           <button
-            onClick={() => setCurrentPage(totalPages)}
+            onClick={() => handlePageChange(totalPages)}
             disabled={currentPage === totalPages}
             className="px-2 py-1 bg-white border border-slate-200 rounded text-slate-600 hover:text-slate-900 disabled:opacity-40 disabled:cursor-not-allowed"
           >

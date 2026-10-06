@@ -222,20 +222,24 @@ export const SearchFilterBar: React.FC<SearchFilterBarProps> = ({
       {/* Filter status line: Active filters display & total count */}
       <div className="flex flex-wrap items-center justify-between gap-2 mt-3 pt-2 text-xs text-slate-500">
         <div className="flex items-center gap-1.5">
-          <span>검색 결과:</span>
+          <span>{filters.sido !== '전체' ? `${filters.sido} 등록업체:` : '검색 결과:'}</span>
           <span className="font-bold font-mono text-slate-900 text-sm">
             {totalFiltered.toLocaleString()}
           </span>
           <span>건</span>
 
+          {filters.sido !== '전체' && (
+            <span className="text-blue-700 bg-blue-50 border border-blue-200 px-2 py-0.5 rounded text-[11px] font-medium ml-1">
+              지역 통계 일치 ({filters.sigungu !== '전체' ? filters.sigungu : '전체 시·군·구'})
+            </span>
+          )}
+
           {(filters.keyword ||
-            filters.sido !== '전체' ||
-            filters.sigungu !== '전체' ||
             filters.status !== '전체' ||
             filters.businessType !== '전체' ||
             filters.category !== '전체') && (
-            <span className="text-blue-600 font-medium ml-2">
-              (필터 적용됨)
+            <span className="text-blue-600 font-medium ml-1">
+              (세부 필터 적용)
             </span>
           )}
         </div>

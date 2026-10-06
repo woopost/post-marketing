@@ -2,11 +2,11 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { Business, FilterState, ApiConfig } from './types/ftc';
 import { INITIAL_BUSINESSES } from './data/businesses';
 import {
-  filterBusinesses,
   getStoredApiConfig,
   getStoredBookmarks,
   toggleStoredBookmark,
 } from './services/ftcApi';
+import { getPaginatedBusinesses, getOfficialTotalCount } from './services/dataGenerator';
 import { Header } from './components/Header';
 import { RegionStatsDashboard } from './components/RegionStatsDashboard';
 import { SearchFilterBar } from './components/SearchFilterBar';
@@ -18,8 +18,9 @@ import { SavedBookmarksDrawer } from './components/SavedBookmarksDrawer';
 import { Shield, Info, ExternalLink, Database, Search } from 'lucide-react';
 
 export default function App() {
-  const [businesses, setBusinesses] = useState<Business[]>(INITIAL_BUSINESSES);
   const [bookmarks, setBookmarks] = useState<string[]>([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
   const [apiConfig, setApiConfig] = useState<ApiConfig>({
     useLiveApi: false,
     serviceKey: '',
@@ -49,27 +50,16 @@ export default function App() {
   useEffect(() => {
     setApiConfig(getStoredApiConfig());
     setBookmarks(getStoredBookmarks());
-
-    // Load businesses from backend proxy
-    fetch('/api/ftc/businesses')
-      .then((res) => (res.ok ? res.json() : null))
-      .then((data) => {
-        if (data && Array.isArray(data.items) && data.items.length > 0) {
-          setBusinesses(data.items);
-        }
-      })
-      .catch((err) => {
-        console.info('Using local dataset', err);
-      });
   }, []);
 
-  // Filtered businesses
-  const filteredBusinesses = useMemo(() => {
-    return filterBusinesses(businesses, filters);
-  }, [businesses, filters]);
+  // Compute paginated businesses and accurate regional total count
+  const { items: displayBusinesses, totalCount } = useMemo(() => {
+    return getPaginatedBusinesses(filters, currentPage, pageSize, INITIAL_BUSINESSES);
+  }, [filters, currentPage, pageSize]);
 
   const handleFilterChange = (newFilters: Partial<FilterState>) => {
     setFilters((prev) => ({ ...prev, ...newFilters }));
+    setCurrentPage(1);
   };
 
   const handleResetFilters = () => {
@@ -85,6 +75,7 @@ export default function App() {
       sortField: 'dclrDate',
       sortOrder: 'desc',
     });
+    setCurrentPage(1);
   };
 
   const handleSelectSido = (sido: string) => {
@@ -93,6 +84,7 @@ export default function App() {
       sido,
       sigungu: '전체',
     }));
+    setCurrentPage(1);
   };
 
   const handleToggleBookmark = (id: string) => {
@@ -102,7 +94,7 @@ export default function App() {
 
   // CSV Export for filtered results
   const handleExportCsv = () => {
-    if (filteredBusinesses.length === 0) return;
+    if (displayBusinesses.length === 0) return;
     const headers = [
       '상호명',
       '대표자',
@@ -119,7 +111,7 @@ export default function App() {
       '대표전화번호',
       '도로명주소',
     ];
-    const rows = filteredBusinesses.map((b) => [
+    const rows = displayBusinesses.map((b) => [
       `"${b.bzmnNm.replace(/"/g, '""')}"`,
       `"${b.rprsvNm.replace(/"/g, '""')}"`,
       `"${b.bizrno}"`,
@@ -158,6 +150,7 @@ export default function App() {
       keyword: cleanBrn,
       searchType: 'bizrno',
     }));
+    setCurrentPage(1);
   };
 
   return (
@@ -222,7 +215,7 @@ export default function App() {
         <RegionStatsDashboard
           selectedSido={filters.sido}
           onSelectSido={handleSelectSido}
-          filteredCount={filteredBusinesses.length}
+          filteredCount={totalCount}
         />
 
         {/* 2. Search & Filter Bar */}
@@ -231,12 +224,20 @@ export default function App() {
           onFilterChange={handleFilterChange}
           onResetFilters={handleResetFilters}
           onExportCsv={handleExportCsv}
-          totalFiltered={filteredBusinesses.length}
+          totalFiltered={totalCount}
         />
 
         {/* 3. Business List Table & Cards */}
         <BusinessListTable
-          businesses={filteredBusinesses}
+          businesses={displayBusinesses}
+          totalCount={totalCount}
+          currentPage={currentPage}
+          pageSize={pageSize}
+          onPageChange={setCurrentPage}
+          onPageSizeChange={(newSize) => {
+            setPageSize(newSize);
+            setCurrentPage(1);
+          }}
           bookmarks={bookmarks}
           onToggleBookmark={handleToggleBookmark}
           onSelectBusiness={(biz) => setSelectedBusiness(biz)}
@@ -315,7 +316,7 @@ export default function App() {
         isOpen={isBookmarksOpen}
         onClose={() => setIsBookmarksOpen(false)}
         bookmarks={bookmarks}
-        businesses={businesses}
+        businesses={[...INITIAL_BUSINESSES, ...displayBusinesses]}
         onToggleBookmark={handleToggleBookmark}
         onSelectBusiness={(biz) => setSelectedBusiness(biz)}
       />
