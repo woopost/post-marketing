@@ -1,0 +1,6 @@
+{
+  "name": "공정위 통신판매사업자 신고자료 통합조회",
+  "description": "공정거래위원회 오픈API 및 공공데이터를 기반으로 전국 지역별 통신판매사업자 등록현황 통계와 업체 상세 신고내역을 검색·조회하는 공공 데이터 포털입니다.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
