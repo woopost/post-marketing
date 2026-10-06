@@ -1,6 +1,21 @@
 import { Business, FilterState } from '../types/ftc';
 import { KOREA_REGIONS } from '../data/regions';
 import { isAddressSimilar, calculateAddressSimilarityScore } from './ftcApi';
+import {
+  ALL_DG_GB_DISTRICTS,
+  TOTAL_DAEGU_COUNT,
+  TOTAL_DAEGU_ACTIVE,
+  TOTAL_DAEGU_SUSPENDED,
+  TOTAL_DAEGU_CLOSED,
+  TOTAL_GYEONGBUK_COUNT,
+  TOTAL_GYEONGBUK_ACTIVE,
+  TOTAL_GYEONGBUK_SUSPENDED,
+  TOTAL_GYEONGBUK_CLOSED,
+  TOTAL_DG_GB_COUNT,
+  TOTAL_DG_GB_ACTIVE,
+  TOTAL_DG_GB_SUSPENDED,
+  TOTAL_DG_GB_CLOSED,
+} from '../data/daeguGyeongbuk';
 
 // District weights / business templates by province
 interface RegionalTemplate {
@@ -164,6 +179,110 @@ const REGIONAL_TEMPLATES: Record<string, RegionalTemplate> = {
           '부산광역시 중구 자갈치해안로 52, 1층',
           '부산광역시 중구 남포길 22',
           '부산광역시 중구 대청로 112'
+        ]
+      }
+    ]
+  },
+  대구광역시: {
+    sido: '대구광역시',
+    shortName: '대구',
+    districts: [
+      '달서구', '수성구', '북구', '중구', '동구', '서구', '남구', '달성군', '군위군'
+    ],
+    businesses: [
+      {
+        district: '수성구',
+        names: ['대구수성스마트에듀', '범어에비뉴커머스', '수성못라이프스타일', '알파시티소프트', '수성디지털기프트'],
+        categories: ['도서/음반', '종합몰', '가전/전자'],
+        phonePrefix: '053-741',
+        roads: [
+          '대구광역시 수성구 달구벌대로 2435, 두산위브 상가 3층',
+          '대구광역시 수성구 동대구로 386, 킹덤오피스텔',
+          '대구광역시 수성구 알파시티1로 160, SW융합센터'
+        ]
+      },
+      {
+        district: '달서구',
+        names: ['성서산단자동화기어', '달서월배리빙마켓', '두류파크스포츠', '대구달서종합물류', '성서디지털기기'],
+        categories: ['가전/전자', '생활/인테리어', '종합몰'],
+        phonePrefix: '053-581',
+        roads: [
+          '대구광역시 달서구 달구벌대로 1530',
+          '대구광역시 달서구 성서공단로 217',
+          '대구광역시 달서구 와룡로 123'
+        ]
+      },
+      {
+        district: '중구',
+        names: ['동성로패션거리몰', '반월당스마트스토어', '대구근대골목공예방', '동성로뷰티스토리'],
+        categories: ['패션/의류', '화장품/뷰티', '생활/인테리어'],
+        phonePrefix: '053-425',
+        roads: [
+          '대구광역시 중구 동성로2길 45, 2층',
+          '대구광역시 중구 달구벌대로 2077, 반월당역 지하상가',
+          '대구광역시 중구 중앙대로 394'
+        ]
+      },
+      {
+        district: '북구',
+        names: ['대구엑스코전시몰', '산격종합유통단지스토어', '경북대창업혁신랩', '칠곡중앙로커머스'],
+        categories: ['가전/전자', '종합몰', '생활/인테리어'],
+        phonePrefix: '053-382',
+        roads: [
+          '대구광역시 북구 엑스코로 10, EXCO 서관',
+          '대구광역시 북구 유통단지로 14길 28',
+          '대구광역시 북구 대학로 80, IT융합관'
+        ]
+      },
+      {
+        district: '동구',
+        names: ['동대구벤처밸리몰', '대구혁신도시스마트상사', '팔공산전통식품명가', '대구공항물류'],
+        categories: ['식품/농수산', '가전/전자', '종합몰'],
+        phonePrefix: '053-752',
+        roads: [
+          '대구광역시 동구 동대구로 465, 대구스케일업허브',
+          '대구광역시 동구 신서로 67, 혁신도시센터',
+          '대구광역시 동구 팔공산로 1120'
+        ]
+      },
+      {
+        district: '서구',
+        names: ['서대구산단부품몰', '대구비산염색패션', '서대구역스마트물류'],
+        categories: ['패션/의류', '가전/전자'],
+        phonePrefix: '053-563',
+        roads: [
+          '대구광역시 서구 국채보상로 150',
+          '대구광역시 서구 와룡로 315'
+        ]
+      },
+      {
+        district: '남구',
+        names: ['앞산카페거리굿즈', '대구대명디지털미디어', '남구봉덕라이프'],
+        categories: ['생활/인테리어', '종합몰'],
+        phonePrefix: '053-471',
+        roads: [
+          '대구광역시 남구 앞산순환로 415',
+          '대구광역시 남구 중앙대로 180'
+        ]
+      },
+      {
+        district: '달성군',
+        names: ['대구테크노폴리스상사', '달성다사스마트스토어', '현풍백년도깨비특산품'],
+        categories: ['가전/전자', '식품/농수산'],
+        phonePrefix: '053-614',
+        roads: [
+          '대구광역시 달성군 유가읍 테크노중앙대로 333',
+          '대구광역시 달성군 다사읍 대실역남로 18'
+        ]
+      },
+      {
+        district: '군위군',
+        names: ['군위화본마을특산품', '군위삼국유사농원', '군위이로운한우마켓'],
+        categories: ['식품/농수산'],
+        phonePrefix: '054-383',
+        roads: [
+          '대구광역시 군위군 군위읍 중앙길 65',
+          '대구광역시 군위군 산성면 산성가음로 722'
         ]
       }
     ]
@@ -597,35 +716,35 @@ export function createSyntheticBusiness(
 
 // Calculate the official total count for given filter conditions
 export function getOfficialTotalCount(filters: FilterState): number {
-  if (filters.sido === '전체') {
-    const totalNational = KOREA_REGIONS.reduce((acc, curr) => acc + curr.totalCount, 0);
-    const activeNational = KOREA_REGIONS.reduce((acc, curr) => acc + curr.activeCount, 0);
-    const suspendedNational = KOREA_REGIONS.reduce((acc, curr) => acc + curr.suspendedCount, 0);
-    const closedNational = KOREA_REGIONS.reduce((acc, curr) => acc + curr.closedCount, 0);
-
-    if (filters.status === '정상영업') return activeNational;
-    if (filters.status === '휴업') return suspendedNational;
-    if (filters.status === '폐업') return closedNational;
-    return totalNational;
-  }
-
-  const region = KOREA_REGIONS.find((r) => r.sido === filters.sido);
-  if (!region) return 0;
-
-  let baseCount = region.totalCount;
-  if (filters.status === '정상영업') baseCount = region.activeCount;
-  else if (filters.status === '휴업') baseCount = region.suspendedCount;
-  else if (filters.status === '폐업') baseCount = region.closedCount + region.cancelledCount;
-
-  // If specific sigungu is chosen
   if (filters.sigungu && filters.sigungu !== '전체') {
-    const districtsCount = Math.max(1, region.districts.filter((d) => d !== '전체').length);
-    const hash = filters.sigungu.split('').reduce((acc, c) => acc + c.charCodeAt(0), 0);
-    const multiplier = 0.7 + (hash % 60) / 100;
-    return Math.round((baseCount / districtsCount) * multiplier);
+    const districtStat = ALL_DG_GB_DISTRICTS.find((d) => d.district === filters.sigungu);
+    if (districtStat) {
+      if (filters.status === '정상영업') return districtStat.activeCount;
+      if (filters.status === '휴업') return districtStat.suspendedCount;
+      if (filters.status === '폐업') return districtStat.closedCount;
+      return districtStat.totalCount;
+    }
   }
 
-  return baseCount;
+  if (filters.sido === '대구광역시') {
+    if (filters.status === '정상영업') return TOTAL_DAEGU_ACTIVE;
+    if (filters.status === '휴업') return TOTAL_DAEGU_SUSPENDED;
+    if (filters.status === '폐업') return TOTAL_DAEGU_CLOSED;
+    return TOTAL_DAEGU_COUNT;
+  }
+
+  if (filters.sido === '경상북도') {
+    if (filters.status === '정상영업') return TOTAL_GYEONGBUK_ACTIVE;
+    if (filters.status === '휴업') return TOTAL_GYEONGBUK_SUSPENDED;
+    if (filters.status === '폐업') return TOTAL_GYEONGBUK_CLOSED;
+    return TOTAL_GYEONGBUK_COUNT;
+  }
+
+  // 대구·경북 전체
+  if (filters.status === '정상영업') return TOTAL_DG_GB_ACTIVE;
+  if (filters.status === '휴업') return TOTAL_DG_GB_SUSPENDED;
+  if (filters.status === '폐업') return TOTAL_DG_GB_CLOSED;
+  return TOTAL_DG_GB_COUNT;
 }
 
 // Generate paginated businesses for a specific query
@@ -715,7 +834,7 @@ export function getPaginatedBusinesses(
         ? [filters.sido]
         : matchedDistricts.length > 0
           ? Array.from(new Set(matchedDistricts.map((m) => m.sido)))
-          : ['서울특별시', '경기도', '부산광역시', '경상북도', '인천광역시', '대구광역시', '대전광역시'];
+          : ['대구광역시', '경상북도'];
 
     for (const sido of targetSidos) {
       for (let i = 0; i < 150; i++) {
@@ -765,7 +884,6 @@ export function getPaginatedBusinesses(
   }
 
   const officialTotal = getOfficialTotalCount(filters);
-  const sido = filters.sido === '전체' ? '경상북도' : filters.sido;
   const targetDistrict = filters.sigungu !== '전체' ? filters.sigungu : undefined;
 
   const items: Business[] = [];
@@ -775,6 +893,9 @@ export function getPaginatedBusinesses(
     if (filters.sido !== '전체' && !b.wrkrSidoNm.includes(filters.sido)) return false;
     if (filters.sigungu !== '전체' && !b.wrkrSiGunGuNm.includes(filters.sigungu)) return false;
     if (filters.status !== '전체' && b.operSttusNm !== filters.status) return false;
+    if (filters.sido === '전체') {
+      return b.wrkrSidoNm.includes('대구') || b.wrkrSidoNm.includes('경북') || b.wrkrSidoNm.includes('경상북도');
+    }
     return true;
   });
 
@@ -787,7 +908,14 @@ export function getPaginatedBusinesses(
       continue;
     }
 
-    const biz = createSyntheticBusiness(sido, itemIndex, targetDistrict);
+    const sidoToUse =
+      filters.sido !== '전체'
+        ? filters.sido
+        : itemIndex % 2 === 0
+          ? '대구광역시'
+          : '경상북도';
+
+    const biz = createSyntheticBusiness(sidoToUse, itemIndex, targetDistrict);
 
     if (filters.status && filters.status !== '전체') {
       biz.operSttusNm = filters.status as Business['operSttusNm'];

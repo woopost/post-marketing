@@ -139,7 +139,7 @@ app.get('/api/ftc/businesses', async (req, res) => {
   const pageSize = Number(size) || 10;
 
   const validSearchType = (
-    ['all', 'bzmnNm', 'bizrno', 'rprsvNm', 'tongsinNo', 'domain', 'address'].includes(String(searchType))
+    ['all', 'bzmnNm', 'tongsinNo', 'domain', 'address'].includes(String(searchType))
       ? String(searchType)
       : 'all'
   ) as any;

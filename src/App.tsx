@@ -78,11 +78,11 @@ export default function App() {
     setCurrentPage(1);
   };
 
-  const handleSelectSido = (sido: string) => {
+  const handleSelectRegion = (sido: string, sigungu: string = '전체') => {
     setFilters((prev) => ({
       ...prev,
       sido,
-      sigungu: '전체',
+      sigungu,
     }));
     setCurrentPage(1);
   };
@@ -177,7 +177,7 @@ export default function App() {
                 전자상거래 소비자보호법에 따른 통신판매사업자 공시정보
               </div>
               <div className="text-[11px] text-slate-500">
-                인터넷쇼핑몰, 오픈마켓 셀러, 스마트스토어 등 전자상거래 등록업체의 인허가 신고현황 및 안전거래 정보를 실시간 조회합니다.
+                인터넷쇼핑몰, 오픈마켓 셀러, 스마트스토어 등 대구·경북 32개 시·군·구 전자상거래 등록업체의 인허가 신고현황 및 안전거래 정보를 실시간 조회합니다.
               </div>
             </div>
           </div>
@@ -185,45 +185,53 @@ export default function App() {
           <div className="flex flex-wrap items-center gap-1.5 text-xs">
             <span className="text-slate-400">빠른 조회:</span>
             <button
-              onClick={() => handleFilterChange({ keyword: '쿠팡', searchType: 'bzmnNm' })}
+              onClick={() => handleFilterChange({ keyword: '청도반시', searchType: 'bzmnNm' })}
               className="px-2 py-0.5 rounded bg-slate-100 hover:bg-slate-200 text-slate-700 transition-colors"
             >
-              쿠팡
+              청도반시 (상호)
             </button>
             <button
-              onClick={() => handleFilterChange({ keyword: '네이버', searchType: 'bzmnNm' })}
+              onClick={() => handleFilterChange({ keyword: '안동한우', searchType: 'bzmnNm' })}
               className="px-2 py-0.5 rounded bg-slate-100 hover:bg-slate-200 text-slate-700 transition-colors"
             >
-              네이버
+              안동한우 (상호)
             </button>
             <button
-              onClick={() => handleFilterChange({ keyword: '테헤란로', searchType: 'address' })}
+              onClick={() => handleFilterChange({ keyword: '청화로', searchType: 'address' })}
               className="px-2 py-0.5 rounded bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 transition-colors"
-              title="도로명 주소 검색 예시"
+              title="청도군 도로명 주소 검색 예시"
             >
-              테헤란로 (주소)
+              청화로 (청도 주소)
             </button>
             <button
-              onClick={() => handleFilterChange({ keyword: '구룡포', searchType: 'address' })}
+              onClick={() => handleFilterChange({ keyword: '동대구로', searchType: 'address' })}
               className="px-2 py-0.5 rounded bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 transition-colors"
-              title="읍/면/리 주소 검색 예시"
+              title="대구 도로명 주소 검색 예시"
             >
-              구룡포 (주소)
+              동대구로 (대구 주소)
             </button>
             <button
-              onClick={() => handleFilterChange({ keyword: '센텀', searchType: 'address' })}
+              onClick={() => handleFilterChange({ keyword: '1공단로', searchType: 'address' })}
               className="px-2 py-0.5 rounded bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 transition-colors"
-              title="지역/거리 주소 검색 예시"
+              title="구미 도로명 주소 검색 예시"
             >
-              센텀 (주소)
+              1공단로 (구미 주소)
+            </button>
+            <button
+              onClick={() => handleFilterChange({ keyword: '호미로', searchType: 'address' })}
+              className="px-2 py-0.5 rounded bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 transition-colors"
+              title="포항 도로명 주소 검색 예시"
+            >
+              호미로 (포항 주소)
             </button>
           </div>
         </div>
 
-        {/* 1. Regional Statistics Dashboard */}
+        {/* 1. Regional Statistics Dashboard (대구·경북 축소) */}
         <RegionStatsDashboard
           selectedSido={filters.sido}
-          onSelectSido={handleSelectSido}
+          selectedSigungu={filters.sigungu}
+          onSelectRegion={handleSelectRegion}
           filteredCount={totalCount}
         />
 

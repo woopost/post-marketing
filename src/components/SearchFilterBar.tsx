@@ -1,7 +1,7 @@
 import React from 'react';
 import { Search, RotateCcw, Download, Filter, Building, Tag, Briefcase } from 'lucide-react';
 import { FilterState } from '../types/ftc';
-import { KOREA_REGIONS } from '../data/regions';
+import { DAEGU_DISTRICTS, GYEONGBUK_DISTRICTS, ALL_DG_GB_DISTRICTS } from '../data/daeguGyeongbuk';
 
 interface SearchFilterBarProps {
   filters: FilterState;
@@ -40,9 +40,15 @@ export const SearchFilterBar: React.FC<SearchFilterBarProps> = ({
   onExportCsv,
   totalFiltered,
 }) => {
-  // Determine available sigungu options based on selected sido
-  const currentRegion = KOREA_REGIONS.find((r) => r.sido === filters.sido);
-  const districtList = currentRegion ? currentRegion.districts : ['전체'];
+  // Determine available sigungu options for Daegu-Gyeongbuk
+  let districtList: string[] = ['전체'];
+  if (filters.sido === '대구광역시') {
+    districtList = ['전체', ...DAEGU_DISTRICTS.map((d) => d.district)];
+  } else if (filters.sido === '경상북도') {
+    districtList = ['전체', ...GYEONGBUK_DISTRICTS.map((d) => d.district)];
+  } else {
+    districtList = ['전체', ...ALL_DG_GB_DISTRICTS.map((d) => d.district)];
+  }
 
   const handleKeywordKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') {
@@ -54,7 +60,7 @@ export const SearchFilterBar: React.FC<SearchFilterBarProps> = ({
     <div className="bg-white border border-slate-200 rounded-xl shadow-xs p-4 sm:p-5 mb-6">
       {/* Search Input Row */}
       <div className="flex flex-col md:flex-row gap-2.5 mb-3.5">
-        {/* Search Scope Selector */}
+        {/* Search Scope Selector - 사업자등록번호와 대표자명 제거됨 */}
         <div className="w-full md:w-44 shrink-0">
           <select
             value={filters.searchType}
@@ -68,8 +74,6 @@ export const SearchFilterBar: React.FC<SearchFilterBarProps> = ({
             <option value="all">통합 검색 (전체)</option>
             <option value="bzmnNm">상호명 / 법인명</option>
             <option value="address">사업장 소재지 주소</option>
-            <option value="bizrno">사업자등록번호 (10자리)</option>
-            <option value="rprsvNm">대표자 성명</option>
             <option value="tongsinNo">통신판매신고번호</option>
             <option value="domain">도메인 / 쇼핑몰URL</option>
           </select>
@@ -83,13 +87,13 @@ export const SearchFilterBar: React.FC<SearchFilterBarProps> = ({
             onChange={(e) => onFilterChange({ keyword: e.target.value })}
             onKeyDown={handleKeywordKeyDown}
             placeholder={
-              filters.searchType === 'bizrno'
-                ? '사업자등록번호 10자리 입력 (예: 120-88-00767)'
-                : filters.searchType === 'tongsinNo'
-                ? '통신판매신고번호 입력 (예: 2024-서울강남-0123)'
+              filters.searchType === 'tongsinNo'
+                ? '통신판매신고번호 입력 (예: 2024-대구수성-0123, 2021-경북청도-0042)'
                 : filters.searchType === 'address'
-                ? '도로명·지번·동/읍/면 등 주소 검색 (예: 테헤란로, 송파대로, 구룡포, 역삼동, 타워730)'
-                : '통합 검색어를 입력하세요 (상호, 대표자, 주소, 사업자번호 등)'
+                ? '도로명·지번·동/읍/면 등 주소 검색 (예: 청화로, 동대구로, 달구벌대로, 구미 1공단로, 포항 호미로)'
+                : filters.searchType === 'bzmnNm'
+                ? '상호명 또는 법인명 입력 (예: 청도반시, 대구텍스타일)'
+                : '통합 검색어를 입력하세요 (상호, 도로명 주소, 신고번호, 도메인 등)'
             }
             className="w-full pl-9 pr-8 py-2 text-sm bg-white border border-slate-300 rounded-lg text-slate-900 placeholder:text-slate-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-hidden"
           />
@@ -129,7 +133,7 @@ export const SearchFilterBar: React.FC<SearchFilterBarProps> = ({
 
       {/* Filter Row: Sido, Sigungu, Status, Category, Business Type */}
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2.5 pt-2 border-t border-slate-100">
-        {/* 1. 시/도 선택 */}
+        {/* 1. 시/도 선택 (대구·경북 축소) */}
         <div>
           <label className="block text-[11px] font-semibold text-slate-500 mb-1">
             관할 시·도
@@ -139,14 +143,11 @@ export const SearchFilterBar: React.FC<SearchFilterBarProps> = ({
             onChange={(e) =>
               onFilterChange({ sido: e.target.value, sigungu: '전체' })
             }
-            className="w-full px-2.5 py-1.5 text-xs bg-slate-50 border border-slate-300 rounded-md text-slate-800 focus:ring-1 focus:ring-blue-500 focus:outline-hidden"
+            className="w-full px-2.5 py-1.5 text-xs bg-slate-50 border border-slate-300 rounded-md text-slate-800 focus:ring-1 focus:ring-blue-500 focus:outline-hidden font-medium"
           >
-            <option value="전체">전국 (전체 시·도)</option>
-            {KOREA_REGIONS.map((r) => (
-              <option key={r.sido} value={r.sido}>
-                {r.sido}
-              </option>
-            ))}
+            <option value="전체">대구·경북 전체</option>
+            <option value="대구광역시">대구광역시 (9개 구·군)</option>
+            <option value="경상북도">경상북도 (23개 시·군)</option>
           </select>
         </div>
 
@@ -158,8 +159,7 @@ export const SearchFilterBar: React.FC<SearchFilterBarProps> = ({
           <select
             value={filters.sigungu}
             onChange={(e) => onFilterChange({ sigungu: e.target.value })}
-            disabled={filters.sido === '전체'}
-            className="w-full px-2.5 py-1.5 text-xs bg-slate-50 border border-slate-300 rounded-md text-slate-800 disabled:bg-slate-100 disabled:text-slate-400 focus:ring-1 focus:ring-blue-500 focus:outline-hidden"
+            className="w-full px-2.5 py-1.5 text-xs bg-slate-50 border border-slate-300 rounded-md text-slate-800 focus:ring-1 focus:ring-blue-500 focus:outline-hidden"
           >
             {districtList.map((d) => (
               <option key={d} value={d}>
