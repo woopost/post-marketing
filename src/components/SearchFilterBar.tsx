@@ -67,6 +67,7 @@ export const SearchFilterBar: React.FC<SearchFilterBarProps> = ({
           >
             <option value="all">통합 검색 (전체)</option>
             <option value="bzmnNm">상호명 / 법인명</option>
+            <option value="address">사업장 소재지 주소</option>
             <option value="bizrno">사업자등록번호 (10자리)</option>
             <option value="rprsvNm">대표자 성명</option>
             <option value="tongsinNo">통신판매신고번호</option>
@@ -86,7 +87,9 @@ export const SearchFilterBar: React.FC<SearchFilterBarProps> = ({
                 ? '사업자등록번호 10자리 입력 (예: 120-88-00767)'
                 : filters.searchType === 'tongsinNo'
                 ? '통신판매신고번호 입력 (예: 2024-서울강남-0123)'
-                : '검색어를 입력하세요 (예: 우아한형제들, 쿠팡, 강남구, 스마트스토어 등)'
+                : filters.searchType === 'address'
+                ? '도로명·지번·동/읍/면 등 주소 검색 (예: 테헤란로, 송파대로, 구룡포, 역삼동, 타워730)'
+                : '통합 검색어를 입력하세요 (상호, 대표자, 주소, 사업자번호 등)'
             }
             className="w-full pl-9 pr-8 py-2 text-sm bg-white border border-slate-300 rounded-lg text-slate-900 placeholder:text-slate-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-hidden"
           />
@@ -228,14 +231,17 @@ export const SearchFilterBar: React.FC<SearchFilterBarProps> = ({
           </span>
           <span>건</span>
 
-          {filters.sido !== '전체' && (
+          {filters.searchType === 'address' && filters.keyword ? (
+            <span className="text-blue-700 bg-blue-50 border border-blue-200 px-2 py-0.5 rounded text-[11px] font-semibold ml-1">
+              도로명 주소 유사 매칭: "{filters.keyword}"
+            </span>
+          ) : filters.sido !== '전체' ? (
             <span className="text-blue-700 bg-blue-50 border border-blue-200 px-2 py-0.5 rounded text-[11px] font-medium ml-1">
               지역 통계 일치 ({filters.sigungu !== '전체' ? filters.sigungu : '전체 시·군·구'})
             </span>
-          )}
+          ) : null}
 
-          {(filters.keyword ||
-            filters.status !== '전체' ||
+          {(filters.status !== '전체' ||
             filters.businessType !== '전체' ||
             filters.category !== '전체') && (
             <span className="text-blue-600 font-medium ml-1">

@@ -26,6 +26,8 @@ interface BusinessListTableProps {
   bookmarks: string[];
   onToggleBookmark: (id: string) => void;
   onSelectBusiness: (business: Business) => void;
+  searchType?: string;
+  searchKeyword?: string;
 }
 
 export const BusinessListTable: React.FC<BusinessListTableProps> = ({
@@ -38,6 +40,8 @@ export const BusinessListTable: React.FC<BusinessListTableProps> = ({
   bookmarks,
   onToggleBookmark,
   onSelectBusiness,
+  searchType,
+  searchKeyword,
 }) => {
   const [viewMode, setViewMode] = useState<'table' | 'cards'>('table');
   const [internalPage, setInternalPage] = useState(1);
@@ -273,10 +277,29 @@ export const BusinessListTable: React.FC<BusinessListTableProps> = ({
                       </div>
                     </td>
 
-                    {/* Region */}
+                    {/* Region & Road Address */}
                     <td className="py-3 px-4 text-slate-700">
-                      <div className="font-medium">{biz.wrkrSidoNm}</div>
-                      <div className="text-[11px] text-slate-400">{biz.wrkrSiGunGuNm}</div>
+                      <div className="font-medium text-slate-900">
+                        {biz.wrkrSidoNm} {biz.wrkrSiGunGuNm}
+                      </div>
+                      {searchType === 'address' && searchKeyword ? (
+                        <div className="flex items-center gap-1 mt-0.5">
+                          <MapPin className="w-3 h-3 text-blue-600 shrink-0" />
+                          <span
+                            className="text-[11px] font-semibold text-blue-900 bg-blue-50 border border-blue-200 px-1.5 py-0.2 rounded truncate max-w-[220px]"
+                            title={biz.rnAddr}
+                          >
+                            {biz.rnAddr}
+                          </span>
+                        </div>
+                      ) : (
+                        <div
+                          className="text-[11px] text-slate-500 truncate max-w-[200px]"
+                          title={biz.rnAddr}
+                        >
+                          {biz.rnAddr}
+                        </div>
+                      )}
                     </td>
 
                     {/* Industry / Category */}
@@ -379,9 +402,23 @@ export const BusinessListTable: React.FC<BusinessListTableProps> = ({
 
                   {/* Metadata: Location & Domain */}
                   <div className="text-xs text-slate-600 space-y-1">
-                    <div className="flex items-center gap-1.5">
-                      <MapPin className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-                      <span className="truncate">{biz.rnAddr}</span>
+                    <div
+                      className={`flex items-center gap-1.5 ${
+                        searchType === 'address' && searchKeyword
+                          ? 'text-blue-900 font-semibold bg-blue-50 border border-blue-200 p-1.5 rounded'
+                          : ''
+                      }`}
+                    >
+                      <MapPin
+                        className={`w-3.5 h-3.5 shrink-0 ${
+                          searchType === 'address' && searchKeyword
+                            ? 'text-blue-600'
+                            : 'text-slate-400'
+                        }`}
+                      />
+                      <span className="truncate" title={biz.rnAddr}>
+                        {biz.rnAddr}
+                      </span>
                     </div>
                     {biz.siteAddr && (
                       <div className="flex items-center gap-1.5">

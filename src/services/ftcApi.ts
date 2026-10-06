@@ -175,6 +175,78 @@ export async function testOpenApiConnection(
   }
 }
 
+// 한국어 주소 유사도 및 토큰 기반 정밀 검사 함수
+export function calculateAddressSimilarityScore(b: Business, query: string): number {
+  if (!query || !query.trim()) return 100;
+
+  const q = query.trim().toLowerCase();
+  const cleanQ = q.replace(/[\s,\(\)\-\.\_]/g, '');
+
+  const rnAddrLower = b.rnAddr.toLowerCase();
+  const cleanRnAddr = rnAddrLower.replace(/[\s,\(\)\-\.\_]/g, '');
+
+  const fullAddr = `${b.wrkrSidoNm} ${b.wrkrSiGunGuNm} ${b.rnAddr} ${b.lnoAddr || ''}`.toLowerCase();
+  const cleanFullAddr = fullAddr.replace(/[\s,\(\)\-\.\_]/g, '');
+
+  // 1. 도로명 주소(rnAddr) 완전 일치 또는 도로명 주소에 검색어 직접 포함
+  if (cleanRnAddr === cleanQ) return 100;
+  if (rnAddrLower.includes(q)) return 95;
+  if (cleanRnAddr.includes(cleanQ)) return 90;
+
+  // 2. 전체 주소(시도+시군구+도로명+지번)에 검색어 직접 포함
+  if (cleanFullAddr.includes(cleanQ)) {
+    return 80;
+  }
+
+  // 3. 토큰 기반 매칭 (예: "경북 청도", "청도군 청화로", "청도읍 고수리")
+  const tokens = q.split(/\s+/).filter((t) => t.length > 0);
+  if (tokens.length > 1) {
+    let tokenMatches = 0;
+    for (const t of tokens) {
+      const cleanToken = t.replace(/[\s,\(\)\-\.\_]/g, '');
+      const stripped = t.replace(/(시|군|구|동|읍|면|로|길|리|대로)$/, '');
+
+      const matchesRn =
+        rnAddrLower.includes(t) ||
+        cleanRnAddr.includes(cleanToken) ||
+        (stripped.length >= 2 && cleanRnAddr.includes(stripped));
+
+      const matchesFull =
+        fullAddr.includes(t) ||
+        cleanFullAddr.includes(cleanToken) ||
+        (stripped.length >= 2 && cleanFullAddr.includes(stripped));
+
+      if (matchesRn) {
+        tokenMatches += 1;
+      } else if (matchesFull) {
+        tokenMatches += 0.8;
+      }
+    }
+
+    // 복수 단어 검색 시 75% 이상의 토큰이 일치해야 유효
+    const matchRatio = tokenMatches / tokens.length;
+    if (matchRatio >= 0.75) {
+      return Math.round(matchRatio * 75);
+    }
+  } else if (tokens.length === 1) {
+    const single = tokens[0];
+    const cleanToken = single.replace(/[\s,\(\)\-\.\_]/g, '');
+    const stripped = single.replace(/(시|군|구|동|읍|면|로|길|리|대로)$/, '');
+
+    // 단일 단어 검색 접미사 유연 매칭 (예: "청도" -> "청도군/청도읍/청화로")
+    if (cleanRnAddr.includes(cleanToken)) return 75;
+    if (stripped.length >= 2 && cleanRnAddr.includes(stripped)) return 65;
+    if (cleanFullAddr.includes(cleanToken)) return 55;
+    if (stripped.length >= 2 && cleanFullAddr.includes(stripped)) return 45;
+  }
+
+  return 0;
+}
+
+export function isAddressSimilar(b: Business, query: string): boolean {
+  return calculateAddressSimilarityScore(b, query) > 0;
+}
+
 // 통합 검색 및 필터링
 export function filterBusinesses(
   businesses: Business[],
@@ -189,6 +261,11 @@ export function filterBusinesses(
       switch (filters.searchType) {
         case 'bzmnNm':
           if (!b.bzmnNm.toLowerCase().includes(q) && !(b.corpNm && b.corpNm.toLowerCase().includes(q))) {
+            return false;
+          }
+          break;
+        case 'address':
+          if (!isAddressSimilar(b, q)) {
             return false;
           }
           break;
@@ -219,7 +296,7 @@ export function filterBusinesses(
           const matchCeo = b.rprsvNm.toLowerCase().includes(q);
           const matchTongsin = b.tongsinBzmnDclrNo.toLowerCase().includes(q);
           const matchDomain = b.siteAddr.toLowerCase().includes(q);
-          const matchAddr = b.rnAddr.toLowerCase().includes(q);
+          const matchAddr = isAddressSimilar(b, q);
           if (!matchName && !matchBizrno && !matchCeo && !matchTongsin && !matchDomain && !matchAddr) {
             return false;
           }
@@ -272,6 +349,15 @@ export function filterBusinesses(
 
     return true;
   }).sort((a, b) => {
+    // 주소 검색 모드일 때는 도로명 주소 유사도가 높은 업체를 우선 정렬
+    if (filters.searchType === 'address' && filters.keyword.trim()) {
+      const scoreA = calculateAddressSimilarityScore(a, filters.keyword);
+      const scoreB = calculateAddressSimilarityScore(b, filters.keyword);
+      if (scoreA !== scoreB) {
+        return scoreB - scoreA;
+      }
+    }
+
     let comparison = 0;
     if (filters.sortField === 'dclrDate') {
       comparison = a.dclrDate.localeCompare(b.dclrDate);

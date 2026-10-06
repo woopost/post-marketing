@@ -66,7 +66,7 @@ app.get('/api/ftc/status', async (req, res) => {
 // 2. 공정위 통신판매사업자 데이터 프록시 & 검색 엔드포인트
 app.get('/api/ftc/businesses', async (req, res) => {
   const apiKey = process.env.DATA_GO_KR_API_KEY?.trim() || '';
-  const { keyword, sido, sigungu, status, page = '1', size = '50' } = req.query;
+  const { keyword, searchType = 'all', sido, sigungu, status, page = '1', size = '10' } = req.query;
 
   // 공공데이터포털 API 키가 설정되어 있는 경우 외부 API 호출 시도
   if (apiKey) {
@@ -138,9 +138,15 @@ app.get('/api/ftc/businesses', async (req, res) => {
   const pageNum = Number(page) || 1;
   const pageSize = Number(size) || 10;
 
+  const validSearchType = (
+    ['all', 'bzmnNm', 'bizrno', 'rprsvNm', 'tongsinNo', 'domain', 'address'].includes(String(searchType))
+      ? String(searchType)
+      : 'all'
+  ) as any;
+
   const filterState = {
     keyword: String(keyword || ''),
-    searchType: 'all' as const,
+    searchType: validSearchType,
     sido: String(sido || '전체'),
     sigungu: String(sigungu || '전체'),
     status: String(status || '전체'),
@@ -151,7 +157,7 @@ app.get('/api/ftc/businesses', async (req, res) => {
     sortOrder: 'desc' as const,
   };
 
-  const { items, totalCount } = getPaginatedBusinesses(filterState, pageNum, pageSize);
+  const { items, totalCount } = getPaginatedBusinesses(filterState, pageNum, pageSize, INITIAL_BUSINESSES);
 
   res.json({
     source: 'verified_db',

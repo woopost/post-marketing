@@ -182,31 +182,40 @@ export default function App() {
             </div>
           </div>
 
-          <div className="flex items-center gap-2 text-xs">
+          <div className="flex flex-wrap items-center gap-1.5 text-xs">
             <span className="text-slate-400">빠른 조회:</span>
             <button
-              onClick={() => handleFilterChange({ keyword: '쿠팡', searchType: 'all' })}
+              onClick={() => handleFilterChange({ keyword: '쿠팡', searchType: 'bzmnNm' })}
               className="px-2 py-0.5 rounded bg-slate-100 hover:bg-slate-200 text-slate-700 transition-colors"
             >
               쿠팡
             </button>
             <button
-              onClick={() => handleFilterChange({ keyword: '네이버', searchType: 'all' })}
+              onClick={() => handleFilterChange({ keyword: '네이버', searchType: 'bzmnNm' })}
               className="px-2 py-0.5 rounded bg-slate-100 hover:bg-slate-200 text-slate-700 transition-colors"
             >
               네이버
             </button>
             <button
-              onClick={() => handleFilterChange({ keyword: '우아한형제들', searchType: 'all' })}
-              className="px-2 py-0.5 rounded bg-slate-100 hover:bg-slate-200 text-slate-700 transition-colors"
+              onClick={() => handleFilterChange({ keyword: '테헤란로', searchType: 'address' })}
+              className="px-2 py-0.5 rounded bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 transition-colors"
+              title="도로명 주소 검색 예시"
             >
-              배달의민족
+              테헤란로 (주소)
             </button>
             <button
-              onClick={() => handleFilterChange({ keyword: '무신사', searchType: 'all' })}
-              className="px-2 py-0.5 rounded bg-slate-100 hover:bg-slate-200 text-slate-700 transition-colors"
+              onClick={() => handleFilterChange({ keyword: '구룡포', searchType: 'address' })}
+              className="px-2 py-0.5 rounded bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 transition-colors"
+              title="읍/면/리 주소 검색 예시"
             >
-              무신사
+              구룡포 (주소)
+            </button>
+            <button
+              onClick={() => handleFilterChange({ keyword: '센텀', searchType: 'address' })}
+              className="px-2 py-0.5 rounded bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 transition-colors"
+              title="지역/거리 주소 검색 예시"
+            >
+              센텀 (주소)
             </button>
           </div>
         </div>
@@ -241,6 +250,8 @@ export default function App() {
           bookmarks={bookmarks}
           onToggleBookmark={handleToggleBookmark}
           onSelectBusiness={(biz) => setSelectedBusiness(biz)}
+          searchType={filters.searchType}
+          searchKeyword={filters.keyword}
         />
       </main>
 

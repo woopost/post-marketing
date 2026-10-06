@@ -38,7 +38,7 @@ export interface RegionSummary {
 
 export interface FilterState {
   keyword: string;
-  searchType: 'all' | 'bzmnNm' | 'bizrno' | 'rprsvNm' | 'tongsinNo' | 'domain';
+  searchType: 'all' | 'bzmnNm' | 'bizrno' | 'rprsvNm' | 'tongsinNo' | 'domain' | 'address';
   sido: string;
   sigungu: string;
   status: string;
